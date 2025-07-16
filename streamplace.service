@@ -1,0 +1,25 @@
+[Unit]
+Description=Streamplace, the Video Layer for Everything
+Documentation=https://stream.place/docs
+After=network.target
+
+[Service]
+Type=simple
+Environment=HOME=%h
+Environment=GOMEMLIMIT=3GiB
+Environment=GOGC=70
+MemoryMax=2G
+Restart=always
+RestartSec=1s
+
+ExecStart=/usr/bin/streamplace \
+    --secure \
+    --app-bundle-id=tv.aquareum \
+    -rate-limit-per-second 0 \
+    -rate-limit-burst 0 \
+    --public-host your-host.domain \
+    --http-internal-addr=0.0.0.0:39090 \
+    --rtmp-server-addon=127.0.0.1:31935
+
+[Install]
+WantedBy=multi-user.target

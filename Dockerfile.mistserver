@@ -1,0 +1,42 @@
+ARG TARGETARCH
+FROM --platform=linux/$TARGETARCH ubuntu:24.04
+
+# Install dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    tar \
+    gzip \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Download and install Streamplace binary
+ARG STREAMPLACE_URL
+# TODO: Replace with updated URL once PR merged
+ENV STREAMPLACE_URL=https://git.stream.place/streamplace/streamplace/-/package_files/18877/download
+RUN if [ -n "$STREAMPLACE_URL" ]; then \
+        export LOCAL_URL="$(echo $STREAMPLACE_URL | sed 's/-cloudflare//')" && \
+        echo "Downloading Streamplace from $LOCAL_URL" && \
+        cd /usr/local/bin && \
+        curl -L "$LOCAL_URL" | tar xzv; \
+    else \
+        echo "STREAMPLACE_URL not provided, skipping streamplace installation"; \
+    fi
+
+# Download and install MistServer
+RUN echo "Installing MistServer..." && \
+    curl -o - https://releases.mistserver.org/is/mistserver_64V3.6.1.tar.gz 2>/dev/null | sh
+
+# Create config directory
+RUN mkdir -p /config
+
+# Copy configuration file
+COPY mistserver.json /config/mistserver.json
+
+# Expose ports
+EXPOSE 28080 31935
+
+# Set working directory
+WORKDIR /config
+
+# Start MistController with configuration
+CMD ["MistController", "-c", "/config/mistserver.json"]

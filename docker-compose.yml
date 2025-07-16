@@ -1,0 +1,54 @@
+version: "3.8"
+
+services:
+  caddy:
+    build:
+      context: .
+      dockerfile: Dockerfile.caddy
+    container_name: caddy
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    extra_hosts:
+      - "host.docker.internal:host-gateway" # Allow access to host services
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./caddy_data:/data
+      - caddy_config:/config
+    environment:
+      - CLOUDFLARE_API_TOKEN=${CLOUDFLARE_API_TOKEN}
+    restart: unless-stopped
+    networks:
+      - caddy_net
+
+  streamplace-mistserver:
+    build:
+      context: .
+      dockerfile: ./Dockerfile.mistserver
+    container_name: streamplace-mistserver
+    ports:
+      - "31935:31935"
+    extra_hosts:
+      - "host.docker.internal:host-gateway" # Allow access to host services
+    volumes:
+      - ./mistserver.json:/config/mistserver.json:ro
+      - caddy_certificates:/certificates:ro
+      - streamplace_data:/data
+      - streamplace_logs:/var/log
+    restart: unless-stopped
+    networks:
+      - caddy_net
+    depends_on:
+      - caddy
+
+volumes:
+  caddy_data:
+  caddy_config:
+  caddy_certificates:
+  streamplace_data:
+  streamplace_logs:
+
+networks:
+  caddy_net:
+    driver: bridge
