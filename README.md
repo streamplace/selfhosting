@@ -3,8 +3,7 @@
 This directory contains configuration files for running your own Streamplace server with a hybrid Docker + systemd approach.
 
 > [!NOTE]
-> This setup isn't designed for production use, but rather for personal/small-scale use.
-> No warranty, etc, etc. If you read this, please don't sue me.
+> This setup is designed for personal/small-scale use.
 
 ## Overview
 
